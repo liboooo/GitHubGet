@@ -1,23 +1,24 @@
 # download an entire github repo.
 #
-# either copy the url to clipboard, and run script, or run following bookmarklet.  
+# either copy the url to clipboard, and run script, or run following bookmarklet.
 # will unzip to repo-branch (so be careful if downloading same branch name from multiple users)
-# 
+#
 ##   javascript:(function()%7Bif(document.location.href.indexOf('http')===0)document.location.href='pythonista://GitHubGet?action=run&argv='+document.location.href;%7D)();
 
 
-import urllib,zipfile,sys, clipboard, functools, re, os, tempfile
+import urllib.request, urllib.parse, urllib.error,zipfile,sys, clipboard, functools, re, os, tempfile, appex
 
 def extract_git_id(git):
-    print git
+    print(git)
     m = re.match((r'^http(s?)://([\w-]*\.)?github\.com/(?P<user>[\w-]+)/(?P<repo>[\w-]*)'
                  '((/tree|/blob)/(?P<branch>[\w-]*))?'), git)
-#    print m.groupdict()
     return m
-    
+
 def git_download_from_args(args):
     if len(args) == 2:
         url = args[1]
+    elif appex.get_url():
+        url = appex.get_url()
     else:
         url = clipboard.get()
     git_download(url)
@@ -44,14 +45,14 @@ def git_download(url):
         #print u
         try:
             with tempfile.NamedTemporaryFile(mode='w+b',suffix='.zip') as f:
-                urllib.urlretrieve(u,f.name,reporthook=functools.partial(dlProgress,u))
+                urllib.request.urlretrieve(u,f.name,reporthook=functools.partial(dlProgress,u))
                 z=zipfile.ZipFile(f)
                 z.extractall()
-                print z.namelist()
+                print(z.namelist())
         except:
             print('git url did not return zip file')
     else:
         print('could not determine repo url from clipboard or argv')
-        
+
 if __name__=='__main__':
     git_download_from_args(sys.argv)
